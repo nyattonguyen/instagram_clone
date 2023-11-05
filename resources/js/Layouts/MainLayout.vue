@@ -12,8 +12,10 @@ import AccountOutline from "vue-material-design-icons/AccountOutline.vue";
 import ChevronLeft from "vue-material-design-icons/ChevronLeft.vue";
 import AccountPlusOutline from "vue-material-design-icons/AccountPlusOutline.vue";
 import MenuItem from "@/Components/MenuItem.vue";
+import CreatePostOverlay from "@/Components/CreatePostOverlay.vue";
 
 const showingNavigationDropdown = ref(false);
+let showCreatePost = ref(false);
 </script>
 
 <template>
@@ -57,7 +59,9 @@ const showingNavigationDropdown = ref(false);
             <Link href="/" class="px-4">
                 <ChevronLeft :size="30" class="cursor-pointer" />
             </Link>
-            <!-- <div class="font-extrabold text-lg">{{ $page.props.auth.user.name }}</div> -->
+            <div class="font-extrabold text-lg">
+                {{ $page.props.auth.user.name }}
+            </div>
             <AccountPlusOutline :size="30" class="cursor-pointer px-4" />
         </div>
 
@@ -88,15 +92,20 @@ const showingNavigationDropdown = ref(false);
                     iconString="Create"
                     class="mb-4"
                 />
-                <!-- <Link
+                <Link
                     :href="
                         route('users.show', { id: $page.props.auth.user.id })
                     "
                 >
                     <MenuItem iconString="Profile" class="mb-4" />
-                </Link> -->
+                </Link>
             </div>
-            <Link href="/" class="absolute bottom-0 px-3 w-full">
+            <Link
+                :href="route('logout')"
+                as="button"
+                method="post"
+                class="absolute bottom-0 px-3 w-full"
+            >
                 <MenuItem iconString="Log out" class="mb-4" />
             </Link>
         </div>
@@ -118,18 +127,23 @@ const showingNavigationDropdown = ref(false);
                 id="SuggestionsSection"
                 class="lg:w-4/12 lg:block hidden text-black mt-10"
             >
-                <Link class="flex items-center justify-between max-w-[300px]">
+                <Link
+                    :href="
+                        route('users.show', { id: $page.props.auth.user.id })
+                    "
+                    class="flex items-center justify-between max-w-[300px]"
+                >
                     <div class="flex items-center">
                         <img
-                            class="rounded-full z-10 w-[58px] h-[58px]"
-                            src="chill.jpg"
+                            class="rounded-full z-10 w-[50px] h-[50px]"
+                            :src="$page.props.auth.user.file"
                         />
                         <div class="pl-4">
                             <div class="text-black font-extrabold">
-                                Name here
+                                {{ $page.props.auth.user.name }}
                             </div>
                             <div class="text-gray-500 text-extrabold text-sm">
-                                Name here
+                                {{ $page.props.auth.user.name }}
                             </div>
                         </div>
                     </div>
@@ -151,30 +165,40 @@ const showingNavigationDropdown = ref(false);
                         See All
                     </button>
                 </div>
-                <Link
-                    href="/"
-                    class="flex items-center justify-between max-w-[300px] pb-2"
+                <div
+                    class=""
+                    v-for="randUser in $page.props.randomUsers"
+                    :key="randUser"
                 >
-                    <div class="flex items-center">
-                        <img
-                            class="rounded-full z-10 w-[58px] h-[58px]"
-                            src="chill.jpg"
-                        />
-                        <div class="pl-4">
-                            <div class="text-black font-extrabold">
-                                Name your here
+                    <template v-if="randUser.id !== $page.props.auth.user.id">
+                        <Link
+                            :href="route('users.show', { id: randUser.id })"
+                            class="flex items-center justify-between max-w-[300px] pb-2"
+                        >
+                            <div class="flex items-center">
+                                <img
+                                    class="rounded-full z-10 w-[50px] h-[50px]"
+                                    :src="randUser.file"
+                                />
+                                <div class="pl-4">
+                                    <div class="text-black font-extrabold">
+                                        {{ randUser.name }}
+                                    </div>
+                                    <div
+                                        class="text-gray-500 font-extrabold text-sm"
+                                    >
+                                        Suggested for you
+                                    </div>
+                                </div>
                             </div>
-                            <div class="text-gray-500 font-extrabold text-sm">
-                                Name your here
-                            </div>
-                        </div>
-                    </div>
-                    <button
-                        class="text-blue-500 hover:text-gray-900 text-xs font-extrabold"
-                    >
-                        Follow
-                    </button>
-                </Link>
+                            <button
+                                class="text-blue-500 hover:text-gray-900 text-xs font-extrabold"
+                            >
+                                Follow
+                            </button>
+                        </Link>
+                    </template>
+                </div>
                 <div class="max-w-[300px] mt-5">
                     <div class="text-sm text-gray-400">
                         About Help Press API Jobs Privacy Terms Locations
@@ -186,5 +210,41 @@ const showingNavigationDropdown = ref(false);
                 </div>
             </div>
         </div>
+        <div
+            id="BottomNav"
+            class="fixed z-30 bottom-0 w-full md:hidden flex items-center justify-around bg-white border-t py-2 border-t-gray-300"
+        >
+            <Link href="/">
+                <HomeOutline
+                    fillColor="#000000"
+                    :size="33"
+                    class="cursor-pointer"
+                />
+            </Link>
+            <Compass fillColor="#000000" :size="33" class="cursor-pointer" />
+            <SendOutline
+                fillColor="#000000"
+                :size="33"
+                class="cursor-pointer"
+            />
+            <Plus
+                @click="showCreatePost = true"
+                fillColor="#000000"
+                :size="33"
+                class="cursor-pointer"
+            />
+            <AccountOutline
+                fillColor="#000000"
+                :size="33"
+                class="cursor-pointer"
+            />
+            <Link>
+                <img
+                    class="rounded-full z-10 w-[50px] h-[50px]"
+                    :src="$page.props.auth.user.file"
+                />
+            </Link>
+        </div>
     </div>
+    <CreatePostOverlay v-if="showCreatePost" @close="showCreatePost = false" />
 </template>
